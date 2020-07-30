@@ -1,18 +1,22 @@
+# Author: Hákon Hákonarson(hakon19)
+
 import sys
 
 
 class Process:
     def __init__(self, debug=False):
+        """Create the lists needed for this program"""
         self.pm = []
-        for i in range(524288):
+        for _ in range(524288):
             self.pm.append(None)
         self.disk = []
-        for i in range(1024):
+        for _ in range(1024):
             self.disk.append([None]*512)
         self.frames = [0, 1]
         self.debug = debug
 
     def print_pm(self):
+        """Only for debugging"""
         if self.debug:
             temp_list = []
             for i in range(len(self.pm)):
@@ -21,6 +25,7 @@ class Process:
             print(temp_list)
 
     def print_disk(self):
+        """Only for debugging"""
         if self.debug:
             temp_list = []
             for i in self.disk:
@@ -29,6 +34,8 @@ class Process:
             print(temp_list)
 
     def initalize(self, init_file):
+        """Takes the init file and places each item in the correct possition
+        in the physical memory."""
         counter = 0
         line1 = None
         line2 = None
@@ -44,6 +51,8 @@ class Process:
         self.init_line2(line2_list)
 
     def init_line1(self, line_list):
+        """Helper function for initalize that handles the top line in the 
+        document."""
         s = None
         z = None
         f = None
@@ -57,6 +66,8 @@ class Process:
                 self.frames.append(f)
 
     def init_line2(self, line_list):
+        """Helper function for initalize that handles the lower line in the 
+        document."""
         s = None
         p = None
         f = None
@@ -73,6 +84,8 @@ class Process:
                 self.frames.append(f)
 
     def line_to_list(self, line):
+        """Helper function for initalize to take the strings in the document
+        and converting them into integers and seperate them in a list."""
         line_list = line.split()
         val1 = None
         val2 = None
@@ -86,6 +99,8 @@ class Process:
         return ret_list
 
     def get_va(self, input_file):
+        """This takes the virtual addresses in a string format from the 
+        document and converts them to an integer and stores them in a list."""
         self.va_list = []
         line_list = None
         for line in input_file:
@@ -95,6 +110,8 @@ class Process:
         self.derive_va()
 
     def derive_va(self):
+        """This function derives the virtual addresses into three parts to be
+        worked with later."""
         var1FF = int('111111111', 2)
         var3FFF = int('111111111111111111', 2)
         s = None
@@ -110,6 +127,8 @@ class Process:
             self.va_derived_list.append([s, p, w, pw])
 
     def translate(self, out_put_name):
+        """This is the function that starts the translations and makes sure
+        that only prints from the translation go to a document."""
         original_stdout = sys.stdout
         output = open(out_put_name, 'w+')
         sys.stdout = output
@@ -117,14 +136,14 @@ class Process:
         sys.stdout = original_stdout
 
     def va_translation(self):
+        """This function handles the translation of the VA and can handle
+        demand paging."""
         s = None
         p = None
         w = None
         pw = None
         pa = None
         for va in self.va_derived_list:
-            # self.print_pm()
-            # self.print_disk()
             s = va[0]
             p = va[1]
             w = va[2]
@@ -132,7 +151,6 @@ class Process:
             if pw >= self.pm[2*s]:
                 print('-1', end=' ')
             else:
-                test_var = self.pm[2*s+1]
                 if self.pm[2*s+1] < 0:
                     new_frame = self.get_new_frame()
                     for i in range(len(self.disk[abs(self.pm[2*s+1])])):
@@ -140,18 +158,16 @@ class Process:
                                 i] = self.disk[abs(self.pm[2*s+1])][i]
                     self.pm[2*s+1] = new_frame
                     self.frames.append(new_frame)
-                test_var2 = self.pm[self.pm[2*s+1]*512+p]
                 if self.pm[self.pm[2*s+1]*512+p] < 0:
                     new_frame2 = self.get_new_frame()
-                    # pm[new_frame2*512] = abs(pm[pm[2*s+1]*512+p])
                     self.pm[self.pm[2*s+1]*512+p] = new_frame2
                     self.frames.append(new_frame2)
-                    # self.print_pm()
                 pa = self.pm[self.pm[2*s+1]*512+p]*512+w
-                # self.print_pm()
                 print(pa, end=' ')
 
     def get_new_frame(self):
+        """This function gets a new frame when something is moved from disk to
+        physical memory"""
         for i in range(1000):
             if i not in self.frames:
                 return i
@@ -164,14 +180,26 @@ def console():
     p_dp = Process()
     if debug == 'y':
         p_dp.debug = True
-    init_dp_file = open(
-        input("Init file name: "), 'r')
-    input_dp_file = open(
-        input("Input file name: "), 'r')
+
+    init_dp_file = input("Init file name(if empty 'init-dp.txt'): ")
+    if init_dp_file == '':
+        init_dp_file = 'init-dp.txt'
+    init_dp_file = open(init_dp_file, 'r')
+
+    input_dp_file = input("Input file name(if empty 'input-dp.txt'): ")
+    if input_dp_file == '':
+        input_dp_file = 'input-dp.txt'
+    input_dp_file = open(input_dp_file, 'r')
+
+    output_name = input("Output file name(if empty 'output-dp.txt'): ")
+    if output_name == '':
+        output_name = 'output-dp.txt'
+
     p_dp.initalize(init_dp_file)
     p_dp.get_va(input_dp_file)
-    p_dp.translate('output-dp.txt')
+    p_dp.translate(output_name)
     p_dp.print_pm()
+    print('Done, your results are located in a file called: ' + output_name)
 
 
 if __name__ == "__main__":
