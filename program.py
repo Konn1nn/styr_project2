@@ -2,28 +2,31 @@ import sys
 
 
 class Process:
-    def __init__(self):
+    def __init__(self, debug=False):
         self.pm = []
         for i in range(524288):
             self.pm.append(None)
         self.disk = []
         for i in range(1024):
-            self.disk.append([])
+            self.disk.append([None]*512)
         self.frames = [0, 1]
+        self.debug = debug
 
     def print_pm(self):
-        temp_list = []
-        for i in range(len(self.pm)):
-            if self.pm[i] != None:
-                temp_list.append([i, self.pm[i]])
-        print(temp_list)
+        if self.debug:
+            temp_list = []
+            for i in range(len(self.pm)):
+                if self.pm[i] != None:
+                    temp_list.append([i, self.pm[i]])
+            print(temp_list)
 
     def print_disk(self):
-        temp_list = []
-        for i in self.disk:
-            if i != []:
-                temp_list.append([self.disk.index(i), i])
-        print(temp_list)
+        if self.debug:
+            temp_list = []
+            for i in self.disk:
+                if i != []:
+                    temp_list.append([self.disk.index(i), i])
+            print(temp_list)
 
     def initalize(self, init_file):
         counter = 0
@@ -63,7 +66,7 @@ class Process:
             p = line[1]
             f = line[2]
             if self.pm[s*2+1] < 0:
-                self.disk[abs(self.pm[2*s+1])].append(f)
+                self.disk[abs(self.pm[2*s+1])][p] = f
             else:
                 self.pm[self.pm[s*2+1]*512+p] = f
             if f >= 0:
@@ -155,44 +158,21 @@ class Process:
 
 
 def console():
-    use_ans = input(
-        "Do you want to run with(w), without(wo) demand paging or both(b)?: ")
-    init_and_input_files = input(
-        "Do you want to use init and input files? y/n: ")
-    if init_and_input_files == 'y':
-        if use_ans in ['wo', 'b']:
-            p = Process()
-            init_file = open(
-                input("Init file name(without demand paging): "), 'r')
-            input_file = open(
-                input("Input file name(without demand paging): "), 'r')
-            p.initalize(init_file)
-            p.get_va(input_file)
-            p.translate('output.txt')
-        if use_ans in ['w', 'b']:
-            p_dp = Process()
-            init_dp_file = open(
-                input("Init file name(with demand paging): "), 'r')
-            input_dp_file = open(
-                input("Input file name(with demand paging): "), 'r')
-            p_dp.initalize(init_dp_file)
-            p_dp.get_va(input_dp_file)
-            p_dp.translate('output_dp.txt')
+    print("\nThis project does run demand paging so it should also handle tests without demand paging.")
+    debug = input(
+        "Do you want to run in debug mode?\n(Get printout of the addresses in PM and whats at that location.) y/n: ")
+    p_dp = Process()
+    if debug == 'y':
+        p_dp.debug = True
+    init_dp_file = open(
+        input("Init file name: "), 'r')
+    input_dp_file = open(
+        input("Input file name: "), 'r')
+    p_dp.initalize(init_dp_file)
+    p_dp.get_va(input_dp_file)
+    p_dp.translate('output-dp.txt')
+    p_dp.print_pm()
 
 
 if __name__ == "__main__":
     console()
-    # init_file = open('init_dp.txt', 'r')
-    # initalize(init_file)
-    # input_file = open('input_dp.txt', 'r')
-    # va_list = get_va(input_file)
-    # print_pm()
-    # va_derived_list = derive_va(va_list)
-    # original_stdout = sys.stdout
-    # output = open('output.txt', 'w+')
-    # sys.stdout = output
-    # va_translation(va_derived_list)
-    # print_pm()
-    # for i in range(len(pm)):
-    #     print(i, ', ', pm[i])
-    # sys.stdout = original_stdout
