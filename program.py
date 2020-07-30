@@ -51,7 +51,7 @@ class Process:
         self.init_line2(line2_list)
 
     def init_line1(self, line_list):
-        """Helper function for initalize that handles the top line in the 
+        """Helper function for initalize that handles the top line in the
         document."""
         s = None
         z = None
@@ -66,7 +66,7 @@ class Process:
                 self.frames.append(f)
 
     def init_line2(self, line_list):
-        """Helper function for initalize that handles the lower line in the 
+        """Helper function for initalize that handles the lower line in the
         document."""
         s = None
         p = None
@@ -99,7 +99,7 @@ class Process:
         return ret_list
 
     def get_va(self, input_file):
-        """This takes the virtual addresses in a string format from the 
+        """This takes the virtual addresses in a string format from the
         document and converts them to an integer and stores them in a list."""
         self.va_list = []
         line_list = None
@@ -175,26 +175,32 @@ class Process:
 
 def console():
     print("\nThis project does run demand paging so it should also handle tests without demand paging.")
-    debug = input(
-        "Do you want to run in debug mode?\n(Get printout of the addresses in PM and whats at that location.) y/n: ")
     p_dp = Process()
-    if debug == 'y':
-        p_dp.debug = True
+    expert_mode = input(
+        "Do you want to configure filenames or debug mode? 'y' for yes, press enter for no: ")
+    if expert_mode == 'y':
+        debug = input(
+            "Do you want to run in debug mode?\n(Get printout of the addresses in PM and whats at that location.) y/n: ")
+        if debug == 'y':
+            p_dp.debug = True
 
-    init_dp_file = input("Init file name(if empty 'init-dp.txt'): ")
-    if init_dp_file == '':
+        init_dp_file = input("Init file name(if empty 'init-dp.txt'): ")
+        if init_dp_file == '':
+            init_dp_file = 'init-dp.txt'
+
+        input_dp_file = input("Input file name(if empty 'input-dp.txt'): ")
+        if input_dp_file == '':
+            input_dp_file = 'input-dp.txt'
+
+        output_name = input("Output file name(if empty 'output-dp.txt'): ")
+        if output_name == '':
+            output_name = 'output-dp.txt'
+    else:
         init_dp_file = 'init-dp.txt'
-    init_dp_file = open(init_dp_file, 'r')
-
-    input_dp_file = input("Input file name(if empty 'input-dp.txt'): ")
-    if input_dp_file == '':
         input_dp_file = 'input-dp.txt'
-    input_dp_file = open(input_dp_file, 'r')
-
-    output_name = input("Output file name(if empty 'output-dp.txt'): ")
-    if output_name == '':
         output_name = 'output-dp.txt'
-
+    init_dp_file = open(init_dp_file, 'r')
+    input_dp_file = open(input_dp_file, 'r')
     p_dp.initalize(init_dp_file)
     p_dp.get_va(input_dp_file)
     p_dp.translate(output_name)
